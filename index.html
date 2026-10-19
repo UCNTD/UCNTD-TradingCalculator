@@ -157,7 +157,7 @@ function trend(s){return /rising/.test(s)?"up":/dropping/.test(s)?"down":"flat"}
 function rangeTxt(u){return u[2]===null?"no listed value":(u[2]===u[3]?fmt(u[2]):fmt(u[2])+"-"+fmt(u[3]))+" shards"}
 
 // Tower pictures: put files in an "images" folder named after the unit, lowercase, letters and numbers only (freddy.png, witherdbonnie.png). Missing pictures show a letter block.
-function pic(u){var f=u[0].toLowerCase().replace(/[^a-z0-9]/g,"");return '<div class="pic gb" style="'+gs(u[1])+'"><img src="images/'+f+'.png" alt="" onerror="this.outerHTML=\''+u[0].charAt(0).toUpperCase()+'\'"></div>'}
+function pic(u){var f=u[0].toLowerCase().replace(/[^a-z0-9]/g,"");return '<div class="pic gb" style="'+gs(u[1])+'"><img class="pi" data-name="'+esc(u[0])+'" data-ph="'+esc(u[0].charAt(0).toUpperCase())+'" src="images/'+f+'.png" alt=""></div>'}
 function drawSide(){
   $("side").innerHTML=["All"].concat(RAR).map(function(r){
     var st=r==="All"?"":' style="'+gs(r)+'"';
@@ -234,7 +234,12 @@ document.addEventListener("click",function(e){
   if(b.dataset.q){a=b.dataset.q.split(",").map(Number);var r=sides[a[0]][a[1]];r.q+=a[2];if(r.q<1)sides[a[0]].splice(a[1],1);render()}
   if(b.dataset.rm){a=b.dataset.rm.split(",").map(Number);sides[a[0]].splice(a[1],1);render()}
 });
-document.addEventListener("error",function(e){var t=e.target;if(t.classList&&t.classList.contains("pi")){var sp=document.createElement("span");sp.textContent=t.dataset.name;t.replaceWith(sp)}},true);
+document.addEventListener("error",function(e){
+  var t=e.target;if(!t.classList||!t.classList.contains("pi"))return;
+  var n=t.dataset.name;
+  if(/^Shiny./.test(n)&&!t.dataset.tried){t.dataset.tried="1";t.src="images/"+n.slice(5).toLowerCase().replace(/[^a-z0-9]/g,"")+".png";return}
+  var sp=document.createElement("span");sp.textContent=t.dataset.ph||n;t.replaceWith(sp);
+},true);
 document.addEventListener("input",function(e){if(e.target.id==="srch")drawPicker()});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closePicker()});
 $("ov").addEventListener("click",function(e){if(e.target===$("ov"))closePicker()});

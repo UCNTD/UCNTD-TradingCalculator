@@ -283,14 +283,40 @@ $("ov").addEventListener("click",function(e){if(e.target===$("ov"))closePicker()
 /* ---- VALUES PAGE ---- */
 // HOME PAGE GAMES. Edit this list: name, picture, link (put it in the images folder), players, visits.
 var G=[
- {name:"ULTIMATE CUSTOM NIGHT TD",img:"images/ucntd.png",url:"https://www.roblox.com/games/136321536774591/UCN-TD",players:"-",visits:"-"}
+ {name:"ULTIMATE CUSTOM NIGHT TD",img:"images/ucntd.png",url:"https://www.roblox.com/games/136321536774591/UCN-TD",placeId:"136321536774591",players:"-",visits:"-"}
 ];
 function drawHome(){
-  $("games").innerHTML=G.map(function(g){
-    return '<a class="gc box" href="'+esc(g.url||"#")+'" target="_blank" rel="noopener noreferrer"><div class="cover"><img class="gi" src="'+esc(g.img)+'" alt=""></div><h3 class="t1">'+esc(g.name)+'</h3>'+
-      '<div class="st"><div><small>PLAYERS</small><b class="pl1">'+esc(g.players)+'</b></div><div><small>VISITS</small><b class="vs">'+esc(g.visits)+'</b></div></div></a>';
+  $("games").innerHTML=G.map(function(g,i){
+    return '<a class="gc box" href="'+esc(g.url||"#")+'" target="_blank" rel="noopener noreferrer"><div class="cover" id="gcov'+i+'"><img class="gi" src="'+esc(g.img)+'" alt=""></div><h3 class="t1">'+esc(g.name)+'</h3>'+
+      '<div class="st"><div><small>PLAYERS</small><b class="pl1" id="gp'+i+'">'+esc(g.players)+'</b></div><div><small>VISITS</small><b class="vs" id="gv'+i+'">'+esc(g.visits)+'</b></div></div></a>';
   }).join("");
 }
+// LIVE ROBLOX DATA (players, visits, picture). Tries roproxy.com first, then roblox.com. If both are blocked the numbers stay as typed above.
+var HOSTS=["roproxy.com","roblox.com"];
+function rj(sub,path){
+  var i=0;
+  return (function next(){
+    if(i>=HOSTS.length)return Promise.reject(new Error("blocked"));
+    return fetch("https://"+sub+"."+HOSTS[i++]+path).then(function(r){if(!r.ok)throw new Error("bad");return r.json()}).catch(next);
+  })();
+}
+function bigFmt(n){n=+n;return n>=1e9?(n/1e9).toFixed(1)+"B":n>=1e6?(n/1e6).toFixed(1)+"M":n.toLocaleString()}
+function loadGame(g,i,withPic){
+  if(!g.placeId)return;
+  var p=g.uid?Promise.resolve(g.uid):rj("apis","/universes/v1/places/"+g.placeId+"/universe").then(function(d){return g.uid=d.universeId});
+  p.then(function(u){
+    rj("games","/v1/games?universeIds="+u).then(function(d){
+      var x=d.data&&d.data[0];if(!x)return;
+      $("gp"+i).textContent=(+x.playing).toLocaleString();$("gv"+i).textContent=bigFmt(x.visits);
+    }).catch(function(){});
+    if(withPic)rj("thumbnails","/v1/games/multiget/thumbnails?universeIds="+u+"&size=768x432&format=Png&isCircular=false").then(function(d){
+      var t=d.data&&d.data[0]&&d.data[0].thumbnails&&d.data[0].thumbnails[0];
+      if(t&&t.imageUrl)$("gcov"+i).innerHTML='<img class="gi" src="'+esc(t.imageUrl)+'" alt="">';
+    }).catch(function(){});
+  }).catch(function(){});
+}
+function loadAll(withPic){G.forEach(function(g,i){loadGame(g,i,withPic)})}
+setInterval(function(){if(!$("pgHome").hidden)loadAll(false)},60000);
 var vp=1,VPS=10,vf={r:{},s:{}};
 function vRows(){
   var q=$("vq").value.trim().toLowerCase(),rk=Object.keys(vf.r).filter(function(k){return vf.r[k]}),sk=Object.keys(vf.s).filter(function(k){return vf.s[k]});
@@ -335,7 +361,7 @@ document.addEventListener("click",function(e){
 });
 document.addEventListener("input",function(e){if(e.target.id==="vq"){vp=1;drawVals()}});
 document.addEventListener("change",function(e){if(e.target.id==="vpn"){vp=parseInt(e.target.value,10)||1;drawVals()}});
-drawHome();render();
+drawHome();loadAll(true);render();
 </script>
 </body>
 </html>

@@ -92,11 +92,41 @@ nav .tab.on{background:var(--line);outline:3px solid var(--yellow);outline-offse
 .vc .cg small{display:block;color:var(--mute);font-size:7px;margin-bottom:3px}
 .vc .cg span{font-size:8px;line-height:1.5;word-break:break-word}
 .vg .meta{grid-column:1/-1;text-align:center}
+/* home page */
+.hero{text-align:center;margin:10px 0 34px}
+.hero h1{margin:0;font-weight:400;font-size:clamp(20px,5vw,40px);color:var(--yellow);text-shadow:4px 4px 0 var(--red);letter-spacing:2px}
+.hero p{margin:14px 0 0;color:var(--mute);font-size:9px;letter-spacing:2px}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,440px));gap:32px;justify-content:center;max-width:1000px;margin:0 auto}
+.gc{overflow:hidden;display:block;color:inherit;text-decoration:none}
+.gc:hover{border-color:var(--yellow)}
+.gc .cover{position:relative;height:200px;background:linear-gradient(135deg,#2a1a6e,#0d0818 60%,#6e1a3a);overflow:hidden}
+.gc .cover img{width:100%;height:100%;object-fit:cover;display:block}
+.gc .cover::after{content:"";position:absolute;inset:auto 0 0 0;height:90px;background:linear-gradient(transparent,var(--panel))}
+.gc h3{margin:0;padding:6px 18px 0;font-weight:400;font-size:14px;line-height:1.7}
+.gc .st{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 18px 20px}
+.gc .st div{border:4px solid var(--line);background:#000;padding:12px 8px;text-align:center}
+.gc .st small{display:block;color:var(--mute);font-size:7px;margin-bottom:6px}
+.gc .st b{font-weight:400;font-size:13px}
+.gc .st .pl1{color:var(--green)}.gc .st .vs{color:var(--purple)}
+.sec{max-width:1000px;margin:44px auto 14px;font-weight:400;font-size:11px;color:var(--purple);text-align:center}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,300px));gap:20px;justify-content:center}
+.lnk{display:grid;gap:10px;text-align:left;padding:16px;min-height:0}
+.lnk b{font-weight:400;font-size:12px;color:var(--yellow)}
+.lnk span{font-size:8px;line-height:1.7;color:var(--mute)}
 </style>
 </head>
 <body>
-<nav><span>UCN TD CENTRAL</span><button class="tab on" data-view="calc">CALCULATOR</button><button class="tab" data-view="vals">VALUES</button></nav>
-<div class="wrap" id="pgCalc">
+<nav><span>UCN TD CENTRAL</span><button class="tab on" data-view="home">HOME</button><button class="tab" data-view="calc">CALCULATOR</button><button class="tab" data-view="vals">VALUES</button></nav>
+<div class="wrap" id="pgHome">
+  <div class="hero"><h1>UCN TD CENTRAL</h1><p>THE PLACE TO KNOW EVERYTHING ABOUT UCN TD</p></div>
+  <div class="games" id="games"></div>
+  <h2 class="sec">PAGES</h2>
+  <div class="links">
+    <button class="lnk box" data-view="calc"><b>CALCULATOR</b><span>Add units to both sides and see if a trade is a win, fair or a loss.</span></button>
+    <button class="lnk box" data-view="vals"><b>VALUES</b><span>Browse every unit with its value, demand and status.</span></button>
+  </div>
+</div>
+<div class="wrap" id="pgCalc" hidden>
   <div class="tools">
     <button id="copy" title="Copy trade as text" aria-label="Copy trade as text">Copy</button>
     <button id="clear" title="Clear trade" aria-label="Clear trade">Clear</button>
@@ -240,7 +270,8 @@ document.addEventListener("click",function(e){
   if(b.dataset.rm){a=b.dataset.rm.split(",").map(Number);sides[a[0]].splice(a[1],1);render()}
 });
 document.addEventListener("error",function(e){
-  var t=e.target;if(!t.classList||!t.classList.contains("pi"))return;
+  var t=e.target;if(t.classList&&t.classList.contains("gi")){t.remove();return}
+  if(!t.classList||!t.classList.contains("pi"))return;
   var n=t.dataset.name;
   if(/^Shiny./.test(n)&&!t.dataset.tried){t.dataset.tried="1";t.src="images/"+n.slice(5).toLowerCase().replace(/[^a-z0-9]/g,"")+".png";return}
   var sp=document.createElement("span");sp.textContent=t.dataset.ph||n;t.replaceWith(sp);
@@ -250,6 +281,16 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")closePicker(
 $("ov").addEventListener("click",function(e){if(e.target===$("ov"))closePicker()});
 
 /* ---- VALUES PAGE ---- */
+// HOME PAGE GAMES. Edit this list: name, picture, link (put it in the images folder), players, visits.
+var G=[
+ {name:"ULTIMATE CUSTOM NIGHT TD",img:"images/ucntd.png",url:"https://www.roblox.com/games/136321536774591/UCN-TD",players:"-",visits:"-"}
+];
+function drawHome(){
+  $("games").innerHTML=G.map(function(g){
+    return '<a class="gc box" href="'+esc(g.url||"#")+'" target="_blank" rel="noopener noreferrer"><div class="cover"><img class="gi" src="'+esc(g.img)+'" alt=""></div><h3 class="t1">'+esc(g.name)+'</h3>'+
+      '<div class="st"><div><small>PLAYERS</small><b class="pl1">'+esc(g.players)+'</b></div><div><small>VISITS</small><b class="vs">'+esc(g.visits)+'</b></div></div></a>';
+  }).join("");
+}
 var vp=1,VPS=10,vf={r:{},s:{}};
 function vRows(){
   var q=$("vq").value.trim().toLowerCase(),rk=Object.keys(vf.r).filter(function(k){return vf.r[k]}),sk=Object.keys(vf.s).filter(function(k){return vf.s[k]});
@@ -276,7 +317,7 @@ function drawVals(){
     '<div class="lbl"></div><button data-vf="clear">CLEAR FILTERS</button>';
 }
 function showView(v){
-  $("pgCalc").hidden=v!=="calc";$("pgVals").hidden=v!=="vals";
+  $("pgHome").hidden=v!=="home";$("pgCalc").hidden=v!=="calc";$("pgVals").hidden=v!=="vals";
   document.querySelectorAll("nav .tab").forEach(function(t){t.classList.toggle("on",t.dataset.view===v)});
   if(v==="vals")drawVals();
 }
@@ -294,7 +335,7 @@ document.addEventListener("click",function(e){
 });
 document.addEventListener("input",function(e){if(e.target.id==="vq"){vp=1;drawVals()}});
 document.addEventListener("change",function(e){if(e.target.id==="vpn"){vp=parseInt(e.target.value,10)||1;drawVals()}});
-render();
+drawHome();render();
 </script>
 </body>
 </html>

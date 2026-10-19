@@ -32,6 +32,10 @@ input{font:inherit;color:var(--text);background:var(--ctl);border:4px solid var(
 .empty{color:var(--mute);grid-column:1/-1;text-align:center;padding-top:110px}
 .gb{border:4px solid transparent;background:linear-gradient(#120a24,#120a24) padding-box,linear-gradient(135deg,var(--g)) border-box}
 .pl button.gb:hover{background:linear-gradient(#2a1a4d,#2a1a4d) padding-box,linear-gradient(135deg,var(--g)) border-box}
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+.gb.sh{--sh:linear-gradient(115deg,#1b1038 0,#4a2a8a 60px,#1f6a8a 120px,#2a9a7a 180px,#8a3a7a 240px,#8a6a2a 300px,#1b1038 400px);--rb:conic-gradient(from var(--ang),#ff2d55,#ffd23f,#39ff88,#38b6ff,#b45cff,#ff2d55);background:var(--sh) 0 0/400px 100% repeat-x padding-box,var(--rb) border-box}
+.pl button.gb.sh:hover{background:var(--sh) 0 0/400px 100% repeat-x padding-box,var(--rb) border-box;filter:brightness(1.25)}
+@media(prefers-reduced-motion:no-preference){.gb.sh{animation:shn 3.5s linear infinite,rot 3s linear infinite}@keyframes shn{to{background-position:400px 0,0 0}}@keyframes rot{to{--ang:360deg}}}
 .top{display:flex;gap:10px;align-items:center}
 .pic{width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--yellow);overflow:hidden}
 .pic img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:block}
@@ -81,7 +85,7 @@ nav .tab.on{background:var(--line);outline:3px solid var(--yellow);outline-offse
 .pg button:disabled{opacity:.35;cursor:default;box-shadow:none}
 .pg input{width:64px;text-align:center;padding:6px}
 .vg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;max-width:1260px;margin:0 auto}
-.vc{padding:12px;background:#0d0818}
+.vc{padding:12px}
 .vc .nm{font-size:9px;line-height:1.6}
 .vc .tag{display:inline-block;margin-top:6px;padding:3px 6px;border:2px solid var(--blue);color:var(--blue);font-size:7px}
 .vc .cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;padding-top:10px;border-top:2px solid #2a1a4d}
@@ -146,6 +150,7 @@ var D=[
 ["ShinyKingScott","Apex",null,null,"O/C","neutral"],["ShinyHorrorSpringTrap","Apex",null,null,"O/C","slowly rising"]
 ];
 var RC={Common:["#ffffff","#9c9c9c"],Rare:["#57aeff","#3690e3"],Epic:["#6200ff","#3e00a1"],Legendary:["#fff700","#fffa61"],Secret:["#d10000","#5c0000"],Limited:["#fff982","#ff8282","#82ffae","#82cbff"],Nightmare:["#000000","#ffffff"],Forgotten:["#00ffd0","#00a3ff","#7a5cff"],Apex:["#6a1bff","#ff1744"],Item:["#39ff88","#38b6ff"]};
+function sh(u){return u[0].indexOf("Shiny")===0?" sh":""}
 function gs(r){var c=RC[r]||["#5b3fd6","#5b3fd6"];return '--g:'+c.join(',')}
 var RAR=["Common","Rare","Epic","Legendary","Secret","Limited","Nightmare","Forgotten","Apex","Item"];
 var cat="All";
@@ -157,7 +162,7 @@ function trend(s){return /rising/.test(s)?"up":/dropping/.test(s)?"down":"flat"}
 function rangeTxt(u){return u[2]===null?"no listed value":(u[2]===u[3]?fmt(u[2]):fmt(u[2])+"-"+fmt(u[3]))+" shards"}
 
 // Tower pictures: put files in an "images" folder named after the unit, lowercase, letters and numbers only (freddy.png, witherdbonnie.png). Missing pictures show a letter block.
-function pic(u){var f=u[0].toLowerCase().replace(/[^a-z0-9]/g,"");return '<div class="pic gb" style="'+gs(u[1])+'"><img class="pi" data-name="'+esc(u[0])+'" data-ph="'+esc(u[0].charAt(0).toUpperCase())+'" src="images/'+f+'.png" alt=""></div>'}
+function pic(u){var f=u[0].toLowerCase().replace(/[^a-z0-9]/g,"");return '<div class="pic gb'+sh(u)+'" style="'+gs(u[1])+'"><img class="pi" data-name="'+esc(u[0])+'" data-ph="'+esc(u[0].charAt(0).toUpperCase())+'" src="images/'+f+'.png" alt=""></div>'}
 function drawSide(){
   $("side").innerHTML=["All"].concat(RAR).map(function(r){
     var st=r==="All"?"":' style="'+gs(r)+'"';
@@ -168,7 +173,7 @@ function drawPicker(){
   var q=$("srch").value.trim().toLowerCase();
   var rows=D.map(function(u,k){return [u,k]}).filter(function(p){return (cat==="All"||p[0][1]===cat)&&p[0][0].toLowerCase().indexOf(q)>-1});
   rows.sort(function(x,y){return RAR.indexOf(x[0][1])-RAR.indexOf(y[0][1])});
-  var h=rows.map(function(p){return '<button class="gb ic" style="'+gs(p[0][1])+'" data-pick="'+p[1]+'" title="'+esc(p[0][0]+' - '+rangeTxt(p[0]))+'" aria-label="'+esc(p[0][0])+'"><img class="pi" data-name="'+esc(p[0][0])+'" src="images/'+p[0][0].toLowerCase().replace(/[^a-z0-9]/g,"")+'.png" alt=""></button>'}).join("");
+  var h=rows.map(function(p){return '<button class="gb ic'+sh(p[0])+'" style="'+gs(p[0][1])+'" data-pick="'+p[1]+'" title="'+esc(p[0][0]+' - '+rangeTxt(p[0]))+'" aria-label="'+esc(p[0][0])+'"><img class="pi" data-name="'+esc(p[0][0])+'" src="images/'+p[0][0].toLowerCase().replace(/[^a-z0-9]/g,"")+'.png" alt=""></button>'}).join("");
   $("pl").innerHTML=h||'<div class="meta">'+(cat==="Item"&&!q?"No items yet.":"No units match.")+'</div>';
   drawSide();
 }
@@ -207,7 +212,7 @@ function render(){
     var h=sides[i].map(function(r,idx){
       var u=D[r.k];
       var mid=u[2]===null?"O/C":fmt((u[2]+u[3])/2*r.q)+" shards";
-      return '<div class="item gb" style="'+gs(u[1])+'"><div class="top">'+pic(u)+'<div><div class="nm">'+esc(u[0])+'</div><div class="val">'+mid+'</div></div></div><div class="meta">'+u[1]+' | '+rangeTxt(u)+'</div>'+
+      return '<div class="item gb'+sh(u)+'" style="'+gs(u[1])+'"><div class="top">'+pic(u)+'<div><div class="nm">'+esc(u[0])+'</div><div class="val">'+mid+'</div></div></div><div class="meta">'+u[1]+' | '+rangeTxt(u)+'</div>'+
         '<div class="meta">'+(u[4]?'demand '+esc(u[4]):'')+(u[5]?' | <span class="'+trend(u[5])+'">'+esc(u[5])+'</span>':'')+'</div>'+
         '<div class="ctrl"><button class="q" data-q="'+i+','+idx+',-1" aria-label="Fewer">-</button><b>'+r.q+'</b><button class="q" data-q="'+i+','+idx+',1" aria-label="More">+</button>'+
         '<button class="q x" data-rm="'+i+','+idx+'" aria-label="Remove">x</button></div></div>';
@@ -257,7 +262,7 @@ function drawVals(){
   if(vp>pages)vp=pages;if(vp<1)vp=1;
   $("vg").innerHTML=rows.slice((vp-1)*VPS,vp*VPS).map(function(u){
     var t=u[5]?trend(u[5]):"";
-    return '<div class="vc gb" style="'+gs(u[1])+'"><div class="top">'+pic(u)+'<div><div class="nm">'+esc(u[0])+'</div><span class="tag">'+u[1].toUpperCase()+'</span></div></div>'+
+    return '<div class="vc gb'+sh(u)+'" style="'+gs(u[1])+'"><div class="top">'+pic(u)+'<div><div class="nm">'+esc(u[0])+'</div><span class="tag">'+u[1].toUpperCase()+'</span></div></div>'+
       '<div class="cg"><div><small>VALUE</small><span class="val">'+(u[2]===null?"O/C":(u[2]===u[3]?fmt(u[2]):fmt(u[2])+"-"+fmt(u[3])))+'</span></div>'+
       '<div><small>DEMAND</small><span>'+(u[4]?esc(u[4]):"-")+'</span></div>'+
       '<div><small>STATUS</small><span class="'+t+'">'+(u[5]?esc(u[5]).toUpperCase():"-")+'</span></div>'+
